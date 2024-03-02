@@ -1,0 +1,42 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat App</title>
+</head>
+<body>
+    <input type="text" id="userInput" placeholder="Enter your name">
+    <input type="text" id="messageInput" placeholder="Type your message">
+    <button onclick="sendMessage()">Send</button>
+    <ul id="messagesList"></ul>
+
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/3.1.11/signalr.min.js"></script>
+    <script src="/chathub"></script>
+    <script>
+        var connection = new signalR.HubConnectionBuilder().withUrl("/chathub").build();
+
+        connection.on("ReceiveMessage", function (user, message) {
+            var messagesList = document.getElementById("messagesList");
+            var li = document.createElement("li");
+            li.textContent = `${user}: ${message}`;
+            messagesList.appendChild(li);
+        });
+
+        connection.start().catch(function (err) {
+            return console.error(err.toString());
+        });
+
+        function sendMessage() {
+            var userInput = document.getElementById("userInput");
+            var messageInput = document.getElementById("messageInput");
+            connection.invoke("SendMessage", userInput.value, messageInput.value).catch(function (err) {
+                return console.error(err.toString());
+            });
+            messageInput.value = "";
+        }
+    </script>
+</body>
+</html>
